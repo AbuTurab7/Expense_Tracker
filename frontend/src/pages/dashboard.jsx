@@ -292,21 +292,25 @@ export default function Dashboard() {
     : "bg-white/70 backdrop-blur";
 
   return (
-    <div className={`min-h-screen p-6 ${theme}`}>
+    <div className={`min-h-screen p-3 md:p-6 ${theme}`}>
       {/* Navbar */}
-      <div className="sticky top-4 z-50 mb-6">
-        <div className="flex justify-between items-center px-6 py-3 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg">
-          <h1 className="text-xl font-semibold">💸 Expense Tracker</h1>
-          <div className="flex gap-3">
+      <div className="sticky top-3 z-50 mb-6">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center px-4 py-3 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg">
+          <h1 className="text-lg md:text-xl font-semibold text-center">
+            💸 Expense Tracker
+          </h1>
+
+          <div className="flex flex-wrap gap-2 justify-center">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="px-3 py-1 rounded-lg bg-indigo-500 text-white"
+              className="px-3 py-1 rounded-lg bg-indigo-500 text-white text-sm"
             >
               {darkMode ? "Light" : "Dark"}
             </button>
+
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 transition text-white px-3 py-1 rounded-lg"
+              className="bg-red-500 text-sm px-3 py-1 rounded-lg text-white"
             >
               Logout
             </button>
@@ -314,42 +318,32 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Export Buttons */}
+      {/* Export */}
       {expenses.length > 0 && (
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={exportExcel}
-            className="bg-green-500 px-4 py-2 rounded text-white"
-          >
+        <div className="flex flex-wrap gap-3 mb-6">
+          <button className="bg-green-500 px-4 py-2 rounded text-white text-sm" onClick={exportExcel}>
             Export Excel
           </button>
-
-          <button
-            onClick={exportPDF}
-            className="bg-purple-500 px-4 py-2 rounded text-white"
-          >
+          <button className="bg-purple-500 px-4 py-2 rounded text-white text-sm" onClick={exportPDF}>
             Export PDF
           </button>
         </div>
       )}
 
       {/* Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
-        <div className={`${card} p-5 rounded-2xl shadow`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div className={`${card} p-5 rounded-2xl`}>
           <p className="opacity-70 text-sm">Total</p>
           <p className="text-2xl font-bold">₹{total}</p>
         </div>
 
-        <div className={`${card} p-5 rounded-2xl shadow`}>
+        <div className={`${card} p-5 rounded-2xl`}>
           <p className="opacity-70 text-sm">Budget</p>
-
           <input
             className="mt-2 w-full p-2 rounded bg-transparent border"
             value={budgetInput}
             onChange={(e) => setBudgetInput(e.target.value)}
           />
-
-
           <button
             onClick={updateBudget}
             className="mt-2 w-full bg-indigo-500 py-2 rounded text-white"
@@ -358,44 +352,44 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className={`${card} p-5 rounded-2xl shadow`}>
+        <div className={`${card} p-5 rounded-2xl`}>
           <p className="opacity-70 text-sm">Remaining</p>
-          <p className={budget - total < 0 ? "text-red-400 text-2xl font-bold" : "text-2xl font-bold"}>
+          <p
+            className={`text-2xl font-bold ${
+              budget - total < 0 ? "text-red-400" : ""
+            }`}
+          >
             ₹{budget - total}
           </p>
         </div>
-
       </div>
 
-      {/* 🔥 AI Insights */}
+      {/* Insights */}
       {insights.length > 0 && (
         <div className={`${card} p-5 rounded-2xl mb-6`}>
-          <h2 className="text-lg font-semibold mb-3">AI Insights</h2>
+          <h2 className="font-semibold mb-3">AI Insights</h2>
           <div className="space-y-2">
-            {insights.map((msg, i) => (
-              <div
-                key={i}
-                className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-sm"
-              >
-                {msg}
+            {insights.map((m, i) => (
+              <div key={i} className="text-sm p-3 rounded bg-indigo-500/10">
+                {m}
               </div>
             ))}
           </div>
         </div>
       )}
 
-
-      {/* ❌ Hide charts if no data */}
+      {/* Charts */}
       {expenses.length > 0 && (
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className={`${card} p-5 rounded-2xl h-[300px]`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className={`${card} p-4 rounded-2xl h-[260px] md:h-[320px]`}>
             <Pie
               data={chartData}
-              options={{ ...chartOptions, maintainAspectRatio: false }}
-            />
+             options={{ ...chartOptions, maintainAspectRatio: false }}
+             />
           </div>
-          <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-            <Bar
+
+          <div className={`${card} p-4 rounded-2xl h-[260px] md:h-[320px]`}>
+                        <Bar
               data={chartData}
               options={{ ...chartOptions, maintainAspectRatio: false }}
             />
@@ -403,46 +397,43 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Add Button */}
+      {/* Add */}
       <button
         onClick={openAdd}
-        className="mb-6 bg-indigo-500 px-5 py-2 rounded-xl text-white shadow"
+        className="mb-6 w-full md:w-auto bg-indigo-500 px-5 py-2 rounded-xl text-white"
       >
         + Add Expense
       </button>
 
       {/* Transactions */}
-      <div className={`${card} p-6 rounded-2xl`}>
-        <h2 className="text-xl font-semibold mb-5">Recent Transactions</h2>
+      <div className={`${card} p-4 md:p-6 rounded-2xl`}>
+        <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
+
         <div className="space-y-3">
           {expenses.map((e) => (
             <div
               key={e._id}
-              className="flex justify-between items-center p-4 rounded-xl bg-white/5 hover:bg-white/10 transition backdrop-blur-md border border-white/10"
+              className="flex flex-col md:flex-row md:justify-between gap-2 p-4 rounded-xl bg-white/5 border border-white/10"
             >
-              <div className="flex flex-col">
-                <span className="font-medium">{e.category}</span>
-
-                <span className="text-xs opacity-60">
+              <div>
+                <p className="font-medium">{e.category}</p>
+                <p className="text-xs opacity-60">
                   {new Date(e.date).toLocaleDateString()} • {e.paymentMethod}
-                </span>
-
+                </p>
                 {e.notes && (
-                  <div className="text-xs mt-1 px-2 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 italic">
+                  <p className="text-xs mt-1 italic opacity-80">
                     📝 {e.notes}
-                  </div>
+                  </p>
                 )}
               </div>
 
-              <div className="font-semibold text-lg">₹{e.amount}</div>
-              <div className="flex gap-3">
+              <div className="font-semibold">₹{e.amount}</div>
+
+              <div className="flex gap-3 text-sm">
                 <button onClick={() => openEdit(e)} className="text-blue-400">
                   Edit
                 </button>
-                <button
-                  onClick={() => deleteExpense(e._id)}
-                  className="text-red-400"
-                >
+                <button onClick={() => deleteExpense(e._id)} className="text-red-400">
                   Delete
                 </button>
               </div>
@@ -451,18 +442,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modal (same as before, unchanged) */}
+      {/* Modal */}
       {openModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-3">
           <div
-            className={`p-6 rounded-2xl w-[90%] md:w-[400px] shadow-xl ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}
+            className={`w-[95%] sm:w-[420px] p-5 rounded-2xl ${
+              darkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+            }`}
           >
-            <h2 className="text-lg mb-4 font-semibold">
+            <h2 className="text-lg font-semibold mb-4">
               {editId ? "Edit Expense" : "Add Expense"}
             </h2>
 
             <input
-              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              className="w-full p-2 mb-3 border rounded"
               placeholder="Amount"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -470,13 +463,13 @@ export default function Dashboard() {
 
             <input
               type="date"
-              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              className="w-full p-2 mb-3 border rounded"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
             />
 
             <select
-              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              className="w-full p-2 mb-3 border rounded"
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
             >
@@ -488,19 +481,15 @@ export default function Dashboard() {
 
             {form.category === "custom" && (
               <input
-                className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
-                placeholder="Enter new category"
+                className="w-full p-2 mb-3 border rounded"
+                placeholder="New category"
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
               />
             )}
 
             <select
-              className={`w-full p-2 border rounded mb-3 ${
-                darkMode
-                  ? "bg-gray-800 text-white border-gray-700"
-                  : "bg-white text-gray-900 border-gray-300"
-              }`}
+              className="w-full p-2 mb-3 border rounded"
               value={form.paymentMethod}
               onChange={(e) =>
                 setForm({ ...form, paymentMethod: e.target.value })
@@ -512,13 +501,13 @@ export default function Dashboard() {
             </select>
 
             <textarea
-              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
-              placeholder="Add note (optional)"
+              className="w-full p-2 mb-3 border rounded"
+              placeholder="Notes"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleSubmit}
                 className="flex-1 bg-indigo-500 text-white py-2 rounded"
@@ -538,3 +527,22 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+
+// {expenses.length > 0 && (
+//         <div className="grid md:grid-cols-2 gap-6 mb-6">
+//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
+//             <Pie
+//               data={chartData}
+//               options={{ ...chartOptions, maintainAspectRatio: false }}
+//             />
+//           </div>
+//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
+//             <Bar
+//               data={chartData}
+//               options={{ ...chartOptions, maintainAspectRatio: false }}
+//             />
+//           </div>
+//         </div>
+//       )}
