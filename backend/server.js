@@ -7,7 +7,7 @@ const app = express();
 
 // app.use(cors());
 app.use(cors({
-  origin: "*",
+  origin: "https://expense-tracker-1-nfzj.onrender.com",
   credentials: true
 }))
 app.use(express.json());

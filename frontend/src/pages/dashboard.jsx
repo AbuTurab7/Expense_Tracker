@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     const exp = await axios.get(
-      `http://${baseURL}/api/expense/${user._id}`,
+      `${baseURL}/api/expense/${user._id}`,
     );
     setExpenses(exp.data);
   };
@@ -103,13 +103,13 @@ export default function Dashboard() {
       form.category === "custom" ? customCategory : form.category;
 
     if (editId) {
-      await axios.put(`http://${baseURL}/api/expense/${editId}`, {
+      await axios.put(`${baseURL}/api/expense/${editId}`, {
         ...form,
         category: finalCategory,
         amount: Number(form.amount),
       });
     } else {
-      await axios.post(`http://${baseURL}/api/expense/add`, {
+      await axios.post(`${baseURL}/api/expense/add`, {
         ...form,
         category: finalCategory,
         amount: Number(form.amount),
@@ -167,7 +167,7 @@ export default function Dashboard() {
   };
 
   const deleteExpense = async (id) => {
-    await axios.delete(`http://${baseURL}/api/expense/${id}`);
+    await axios.delete(`${baseURL}/api/expense/${id}`);
     loadData();
   };
 

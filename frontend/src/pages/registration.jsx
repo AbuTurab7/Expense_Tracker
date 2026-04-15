@@ -24,7 +24,7 @@ export default function Register() {
 
     try {
       await axios.post(
-        `http://${baseURL}/api/auth/register`,
+        `${baseURL}/api/auth/register`,
         form
       );
 

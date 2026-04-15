@@ -14,7 +14,7 @@ export default function Login() {
   const login = async () => {
     try {
       const res = await axios.post(
-        `http://${baseURL}/api/auth/login`,
+        `${baseURL}/api/auth/login`,
         data
       );
 
