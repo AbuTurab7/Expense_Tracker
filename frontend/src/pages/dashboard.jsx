@@ -15,7 +15,6 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -33,29 +32,57 @@ export default function Dashboard() {
     amount: "",
     category: "Food",
     date: "",
-    note: "",
+    notes: "",
+    paymentMethod: "Cash",
   });
   const [customCategory, setCustomCategory] = useState("");
   const [editId, setEditId] = useState(null);
   const [budget, setBudget] = useState(0);
   const [budgetInput, setBudgetInput] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [openModal, setOpenModal] = useState(false);
 
- const baseURL = process.env.REACT_APP_API_URL;
+   const baseURL = process.env.REACT_APP_API_URL;
+  // const baseURL = `http://localhost:5000`;
 
   const categories = ["Food", "Travel", "Shopping", "Bills"];
 
   useEffect(() => {
     if (!user) return (window.location.href = "/");
     loadData();
-  }, []);
+  }, [user]);
+
+ 
 
   const loadData = async () => {
-    const exp = await axios.get(
-      `${baseURL}/api/expense/${user._id}`,
-    );
-    setExpenses(exp.data);
+    try {
+      const exp = await axios.get(`${baseURL}/api/expense/${user._id}`);
+      const bud = await axios.get(`${baseURL}/api/budget/${user._id}`);
+
+      setExpenses(exp.data);
+      if (bud.data) {
+        setBudget(bud.data.amount || 0);
+
+      }
+    } catch (err) {
+      console.log("Error loading data");
+    }
+  };
+
+  const updateBudget = async () => {
+    if (!budgetInput || budgetInput <= 0) return;
+
+    try {
+      const res = await axios.post(`${baseURL}/api/budget/set`, {
+        userId: user._id,
+        amount: Number(budgetInput),
+      });
+
+      setBudget(res.data.amount);
+      setBudgetInput("");
+    } catch {
+      console.log("Failed to update budget");
+    }
   };
 
   // ✅ EXPORT EXCEL
@@ -64,7 +91,7 @@ export default function Dashboard() {
       Category: e.category,
       Amount: e.amount,
       Date: new Date(e.date).toLocaleDateString(),
-      Note: e.note || "",
+      Note: e.notes || "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -76,25 +103,25 @@ export default function Dashboard() {
 
   // ✅ EXPORT PDF
   const exportPDF = () => {
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  const tableData = expenses.map((e) => [
-    e.category,
-    `₹${e.amount}`,
-    new Date(e.date).toLocaleDateString(),
-    e.note || "",
-  ]);
+    const tableData = expenses.map((e) => [
+      e.category,
+      `₹${e.amount}`,
+      new Date(e.date).toLocaleDateString(),
+      e.notes || "",
+    ]);
 
-  doc.text("Expense Report", 14, 15);
+    doc.text("Expense Report", 14, 15);
 
-  autoTable(doc, {
-    head: [["Category", "Amount", "Date", "Note"]],
-    body: tableData,
-    startY: 20,
-  });
+    autoTable(doc, {
+      head: [["Category", "Amount", "Date", "Note"]],
+      body: tableData,
+      startY: 20,
+    });
 
-  doc.save("expenses.pdf");
-};
+    doc.save("expenses.pdf");
+  };
 
   const handleSubmit = async () => {
     if (!form.amount || !form.date) return;
@@ -102,19 +129,17 @@ export default function Dashboard() {
     const finalCategory =
       form.category === "custom" ? customCategory : form.category;
 
+    const payload = {
+      ...form,
+      category: finalCategory,
+      amount: Number(form.amount),
+      userId: user._id,
+    };
+
     if (editId) {
-      await axios.put(`${baseURL}/api/expense/${editId}`, {
-        ...form,
-        category: finalCategory,
-        amount: Number(form.amount),
-      });
+      await axios.put(`${baseURL}/api/expense/${editId}`, payload);
     } else {
-      await axios.post(`${baseURL}/api/expense/add`, {
-        ...form,
-        category: finalCategory,
-        amount: Number(form.amount),
-        userId: user._id,
-      });
+      await axios.post(`${baseURL}/api/expense/add`, payload);
     }
 
     closeModal();
@@ -123,7 +148,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    window.location.href = "/";
+    window.location.href = "/login";
   };
 
   const openEdit = (e) => {
@@ -134,7 +159,7 @@ export default function Dashboard() {
       amount: e.amount,
       category: isCustom ? "custom" : e.category,
       date: e.date?.split("T")[0],
-      note: e.note || "",
+      notes: e.notes || "",
     });
 
     if (isCustom) setCustomCategory(e.category);
@@ -148,7 +173,7 @@ export default function Dashboard() {
       amount: "",
       category: "Food",
       date: "",
-      note: "",
+      notes: "",
     });
     setCustomCategory("");
     setOpenModal(true);
@@ -161,7 +186,7 @@ export default function Dashboard() {
       amount: "",
       category: "Food",
       date: "",
-      note: "",
+      notes: "",
     });
     setCustomCategory("");
   };
@@ -173,6 +198,7 @@ export default function Dashboard() {
 
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
 
+
   const categoryMap = {};
   expenses.forEach((e) => {
     categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount;
@@ -181,52 +207,41 @@ export default function Dashboard() {
   // 🔥 AI Insights
   const insights = useMemo(() => {
     if (!expenses.length) return [];
-
     const now = new Date();
-
     const thisWeek = expenses.filter((e) => {
       const d = new Date(e.date);
       return now - d <= 7 * 24 * 60 * 60 * 1000;
     });
-
     const lastWeek = expenses.filter((e) => {
       const d = new Date(e.date);
       return (
-        now - d > 7 * 24 * 60 * 60 * 1000 &&
-        now - d <= 14 * 24 * 60 * 60 * 1000
+        now - d > 7 * 24 * 60 * 60 * 1000 && now - d <= 14 * 24 * 60 * 60 * 1000
       );
     });
-
     const thisWeekTotal = thisWeek.reduce((s, e) => s + e.amount, 0);
     const lastWeekTotal = lastWeek.reduce((s, e) => s + e.amount, 0);
-
     const messages = [];
-
     if (lastWeekTotal > 0) {
       const diff = ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100;
-
       if (diff > 0) {
         messages.push(`📈 You spent ${diff.toFixed(0)}% more than last week`);
       } else {
-        messages.push(`📉 You spent ${Math.abs(diff).toFixed(0)}% less than last week`);
+        messages.push(
+          `📉 You spent ${Math.abs(diff).toFixed(0)}% less than last week`,
+        );
       }
     }
-
     const topCategory = Object.entries(categoryMap).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1] - a[1],
     )[0];
-
     if (topCategory) {
       messages.push(`🏷️ Top spending category: ${topCategory[0]}`);
     }
-
     if (budget && total > budget) {
       messages.push(`⚠️ You exceeded your budget by ₹${total - budget}`);
     }
-
     return messages;
   }, [expenses, total, budget]);
-
   const gradientColors = useMemo(
     () => [
       "rgba(99,102,241,0.8)",
@@ -299,8 +314,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-
-       {/* Export Buttons */}
+      {/* Export Buttons */}
       {expenses.length > 0 && (
         <div className="flex gap-3 mb-6">
           <button
@@ -328,13 +342,16 @@ export default function Dashboard() {
 
         <div className={`${card} p-5 rounded-2xl shadow`}>
           <p className="opacity-70 text-sm">Budget</p>
+
           <input
             className="mt-2 w-full p-2 rounded bg-transparent border"
             value={budgetInput}
             onChange={(e) => setBudgetInput(e.target.value)}
           />
+
+
           <button
-            onClick={() => setBudget(Number(budgetInput))}
+            onClick={updateBudget}
             className="mt-2 w-full bg-indigo-500 py-2 rounded text-white"
           >
             Set
@@ -343,8 +360,11 @@ export default function Dashboard() {
 
         <div className={`${card} p-5 rounded-2xl shadow`}>
           <p className="opacity-70 text-sm">Remaining</p>
-          <p className="text-2xl font-bold">₹{budget - total}</p>
+          <p className={budget - total < 0 ? "text-red-400 text-2xl font-bold" : "text-2xl font-bold"}>
+            ₹{budget - total}
+          </p>
         </div>
+
       </div>
 
       {/* 🔥 AI Insights */}
@@ -364,30 +384,30 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Charts
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-          <Pie data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
-        </div>
-        <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-          <Bar data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
-        </div>
-      </div> */}
 
       {/* ❌ Hide charts if no data */}
       {expenses.length > 0 && (
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-            <Pie data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+            <Pie
+              data={chartData}
+              options={{ ...chartOptions, maintainAspectRatio: false }}
+            />
           </div>
           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-            <Bar data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+            <Bar
+              data={chartData}
+              options={{ ...chartOptions, maintainAspectRatio: false }}
+            />
           </div>
         </div>
       )}
 
       {/* Add Button */}
-      <button onClick={openAdd} className="mb-6 bg-indigo-500 px-5 py-2 rounded-xl text-white shadow">
+      <button
+        onClick={openAdd}
+        className="mb-6 bg-indigo-500 px-5 py-2 rounded-xl text-white shadow"
+      >
         + Add Expense
       </button>
 
@@ -396,22 +416,35 @@ export default function Dashboard() {
         <h2 className="text-xl font-semibold mb-5">Recent Transactions</h2>
         <div className="space-y-3">
           {expenses.map((e) => (
-            <div key={e._id} className="flex justify-between items-center p-4 rounded-xl bg-white/5 hover:bg-white/10 transition backdrop-blur-md border border-white/10">
+            <div
+              key={e._id}
+              className="flex justify-between items-center p-4 rounded-xl bg-white/5 hover:bg-white/10 transition backdrop-blur-md border border-white/10"
+            >
               <div className="flex flex-col">
                 <span className="font-medium">{e.category}</span>
-                <span className="text-sm opacity-60">
-                  {new Date(e.date).toLocaleDateString()}
+
+                <span className="text-xs opacity-60">
+                  {new Date(e.date).toLocaleDateString()} • {e.paymentMethod}
                 </span>
-                {e.note && (
-                  <span className="text-xs opacity-50 italic mt-1">
-                    {e.note}
-                  </span>
+
+                {e.notes && (
+                  <div className="text-xs mt-1 px-2 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 italic">
+                    📝 {e.notes}
+                  </div>
                 )}
               </div>
+
               <div className="font-semibold text-lg">₹{e.amount}</div>
               <div className="flex gap-3">
-                <button onClick={() => openEdit(e)} className="text-blue-400">Edit</button>
-                <button onClick={() => deleteExpense(e._id)} className="text-red-400">Delete</button>
+                <button onClick={() => openEdit(e)} className="text-blue-400">
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteExpense(e._id)}
+                  className="text-red-400"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}
@@ -421,7 +454,9 @@ export default function Dashboard() {
       {/* Modal (same as before, unchanged) */}
       {openModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className={`p-6 rounded-2xl w-[90%] md:w-[400px] shadow-xl ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
+          <div
+            className={`p-6 rounded-2xl w-[90%] md:w-[400px] shadow-xl ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}
+          >
             <h2 className="text-lg mb-4 font-semibold">
               {editId ? "Edit Expense" : "Add Expense"}
             </h2>
@@ -460,18 +495,40 @@ export default function Dashboard() {
               />
             )}
 
+            <select
+              className={`w-full p-2 border rounded mb-3 ${
+                darkMode
+                  ? "bg-gray-800 text-white border-gray-700"
+                  : "bg-white text-gray-900 border-gray-300"
+              }`}
+              value={form.paymentMethod}
+              onChange={(e) =>
+                setForm({ ...form, paymentMethod: e.target.value })
+              }
+            >
+              <option>Cash</option>
+              <option>UPI</option>
+              <option>Card</option>
+            </select>
+
             <textarea
               className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
               placeholder="Add note (optional)"
-              value={form.note}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
 
             <div className="flex gap-3">
-              <button onClick={handleSubmit} className="flex-1 bg-indigo-500 text-white py-2 rounded">
+              <button
+                onClick={handleSubmit}
+                className="flex-1 bg-indigo-500 text-white py-2 rounded"
+              >
                 {editId ? "Update" : "Add"}
               </button>
-              <button onClick={closeModal} className="flex-1 bg-gray-400 text-white py-2 rounded">
+              <button
+                onClick={closeModal}
+                className="flex-1 bg-gray-400 text-white py-2 rounded"
+              >
                 Cancel
               </button>
             </div>

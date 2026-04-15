@@ -3,13 +3,12 @@ const Budget = require("../models/Budget");
 
 // Set Budget
 router.post("/set", async (req, res) => {
-  const { userId, amount, type } = req.body;
+  const { userId, amount } = req.body;
 
   let budget = await Budget.findOne({ userId });
 
   if (budget) {
     budget.amount = amount;
-    budget.type = type;
     await budget.save();
   } else {
     budget = new Budget({ userId, amount, type });
