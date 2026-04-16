@@ -7,7 +7,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://expense-tracker-1-nfzj.onrender.com",
+  "https://expense-tracker-2-op9l.onrender.com",
 ].filter(Boolean);
 
 app.use(cors({
