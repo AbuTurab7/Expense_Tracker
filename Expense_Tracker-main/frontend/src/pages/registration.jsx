@@ -139,7 +139,7 @@ export default function Register() {
           <input
             type="text"
             className={inputClass}
-            placeholder="Azeem Khan"
+            placeholder="Abu Turab"
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
           />

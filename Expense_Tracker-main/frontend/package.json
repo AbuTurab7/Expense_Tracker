@@ -15,7 +15,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.5",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^7.14.0",
+    "react-router-dom": "^7.14.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
@@ -45,8 +45,8 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.9",
-    "tailwindcss": "^3.4.1"
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^3.4.19"
   }
 }
