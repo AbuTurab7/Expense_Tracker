@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "_id": "69e0a6a1762361931c2fb4e8",
+      "name": "Demo User",
+      "email": "demo@example.com",
+      "password": "$2b$10$EcAkM20SIu.VxvavpaSNZe1YfAB5XzXFN.PQnvECq8RRAmJVbI4Pu"
+    }
+  ],
+  "expenses": [
+    {
+      "userId": "69e0a6a1762361931c2fb4e8",
+      "title": "rice",
+      "amount": 3000,
+      "type": "expense",
+      "category": "Food",
+      "date": "2026-04-17",
+      "paymentMethod": "Bank Transfer",
+      "wallet": "Savings",
+      "status": "cleared",
+      "tags": [
+        "family"
+      ],
+      "recurring": false,
+      "notes": "",
+      "_id": "69e0a72a762361931c2fb4e9",
+      "createdAt": "2026-04-16T09:08:58.445Z",
+      "updatedAt": "2026-04-16T09:08:58.453Z"
+    }
+  ],
+  "budgets": []
+}
