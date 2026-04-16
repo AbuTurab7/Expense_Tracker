@@ -52,8 +52,6 @@ export default function Dashboard() {
     loadData();
   }, [user]);
 
- 
-
   const loadData = async () => {
     try {
       const exp = await axios.get(`${baseURL}/api/expense/${user._id}`);
@@ -62,7 +60,6 @@ export default function Dashboard() {
       setExpenses(exp.data);
       if (bud.data) {
         setBudget(bud.data.amount || 0);
-
       }
     } catch (err) {
       console.log("Error loading data");
@@ -198,7 +195,6 @@ export default function Dashboard() {
 
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
 
-
   const categoryMap = {};
   expenses.forEach((e) => {
     categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount;
@@ -317,19 +313,23 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
       {/* Export */}
       {expenses.length > 0 && (
         <div className="flex flex-wrap gap-3 mb-6">
-          <button className="bg-green-500 px-4 py-2 rounded text-white text-sm" onClick={exportExcel}>
+          <button
+            className="bg-green-500 px-4 py-2 rounded text-white text-sm"
+            onClick={exportExcel}
+          >
             Export Excel
           </button>
-          <button className="bg-purple-500 px-4 py-2 rounded text-white text-sm" onClick={exportPDF}>
+          <button
+            className="bg-purple-500 px-4 py-2 rounded text-white text-sm"
+            onClick={exportPDF}
+          >
             Export PDF
           </button>
         </div>
       )}
-
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <div className={`${card} p-5 rounded-2xl`}>
@@ -363,7 +363,6 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
-
       {/* Insights */}
       {insights.length > 0 && (
         <div className={`${card} p-5 rounded-2xl mb-6`}>
@@ -377,26 +376,24 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
       {/* Charts */}
       {expenses.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className={`${card} p-4 rounded-2xl h-[260px] md:h-[320px]`}>
             <Pie
               data={chartData}
-             options={{ ...chartOptions, maintainAspectRatio: false }}
-             />
+              options={{ ...chartOptions, maintainAspectRatio: false }}
+            />
           </div>
 
           <div className={`${card} p-4 rounded-2xl h-[260px] md:h-[320px]`}>
-                        <Bar
+            <Bar
               data={chartData}
               options={{ ...chartOptions, maintainAspectRatio: false }}
             />
           </div>
         </div>
       )}
-
       {/* Add */}
       <button
         onClick={openAdd}
@@ -404,7 +401,6 @@ export default function Dashboard() {
       >
         + Add Expense
       </button>
-
       {/* Transactions */}
       <div className={`${card} p-4 md:p-6 rounded-2xl`}>
         <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
@@ -421,9 +417,7 @@ export default function Dashboard() {
                   {new Date(e.date).toLocaleDateString()} • {e.paymentMethod}
                 </p>
                 {e.notes && (
-                  <p className="text-xs mt-1 italic opacity-80">
-                    📝 {e.notes}
-                  </p>
+                  <p className="text-xs mt-1 italic opacity-80">📝 {e.notes}</p>
                 )}
               </div>
 
@@ -433,7 +427,10 @@ export default function Dashboard() {
                 <button onClick={() => openEdit(e)} className="text-blue-400">
                   Edit
                 </button>
-                <button onClick={() => deleteExpense(e._id)} className="text-red-400">
+                <button
+                  onClick={() => deleteExpense(e._id)}
+                  className="text-red-400"
+                >
                   Delete
                 </button>
               </div>
@@ -441,9 +438,112 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
-
-      {/* Modal */}
+      
+      {/* Modal (same as before, unchanged) */}{" "}
       {openModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          {" "}
+          <div
+            className={`p-6 rounded-2xl w-[90%] md:w-[400px] shadow-xl ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}
+          >
+            {" "}
+            <h2 className="text-lg mb-4 font-semibold">
+              {" "}
+              {editId ? "Edit Expense" : "Add Expense"}{" "}
+            </h2>{" "}
+            <input
+              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              placeholder="Amount"
+              value={form.amount}
+              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            />{" "}
+            <input
+              type="date"
+              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+            />{" "}
+            <select
+              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+            >
+              {" "}
+              {categories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}{" "}
+              <option value="custom">+ Add New</option>{" "}
+            </select>{" "}
+            {form.category === "custom" && (
+              <input
+                className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+                placeholder="Enter new category"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+              />
+            )}{" "}
+            <select
+              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              value={form.paymentMethod}
+              onChange={(e) =>
+                setForm({ ...form, paymentMethod: e.target.value })
+              }
+            >
+              {" "}
+              <option>Cash</option> <option>UPI</option>{" "}
+              <option>Card</option>{" "}
+            </select>{" "}
+            <textarea
+              className={`w-full p-2 border rounded mb-3 ${darkMode ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-900 border-gray-300"}`}
+              placeholder="Add note (optional)"
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />{" "}
+            <div className="flex gap-3">
+              {" "}
+              <button
+                onClick={handleSubmit}
+                className="flex-1 bg-indigo-500 text-white py-2 rounded"
+              >
+                {" "}
+                {editId ? "Update" : "Add"}{" "}
+              </button>{" "}
+              <button
+                onClick={closeModal}
+                className="flex-1 bg-gray-400 text-white py-2 rounded"
+              >
+                {" "}
+                Cancel{" "}
+              </button>{" "}
+            </div>{" "}
+          </div>{" "}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// {expenses.length > 0 && (
+//         <div className="grid md:grid-cols-2 gap-6 mb-6">
+//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
+//             <Pie
+//               data={chartData}
+//               options={{ ...chartOptions, maintainAspectRatio: false }}
+//             />
+//           </div>
+//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
+//             <Bar
+//               data={chartData}
+//               options={{ ...chartOptions, maintainAspectRatio: false }}
+//             />
+//           </div>
+//         </div>
+//       )}
+
+
+
+{/* Modal */}
+      {/* {openModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-3">
           <div
             className={`w-[95%] sm:w-[420px] p-5 rounded-2xl ${
@@ -455,7 +555,7 @@ export default function Dashboard() {
             </h2>
 
             <input
-              className="w-full p-2 mb-3 border rounded"
+              className="w-full p-2 mb-3 border rounded "
               placeholder="Amount"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -523,26 +623,4 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-
-
-// {expenses.length > 0 && (
-//         <div className="grid md:grid-cols-2 gap-6 mb-6">
-//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-//             <Pie
-//               data={chartData}
-//               options={{ ...chartOptions, maintainAspectRatio: false }}
-//             />
-//           </div>
-//           <div className={`${card} p-5 rounded-2xl h-[300px]`}>
-//             <Bar
-//               data={chartData}
-//               options={{ ...chartOptions, maintainAspectRatio: false }}
-//             />
-//           </div>
-//         </div>
-//       )}
+      )} */}
